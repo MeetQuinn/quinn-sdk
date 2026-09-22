@@ -8,6 +8,8 @@ export interface CoursesListQuery extends PaginationQuery {
 export interface Course {
   id: string;
   name: string;
+  /** Stored course explainer shown in the course details UI; null when absent. */
+  description: string | null;
   courseType: CourseType | null;
   creatorUid: string;
   learnerCount: number;
