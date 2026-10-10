@@ -17,6 +17,9 @@ export type SignOffFieldType =
 
 export type SignOffFormStatus = 'active' | 'archived';
 
+/** How a sign-off is completed: the learner submits evidence, or an evaluator observes them. */
+export type SignOffMethod = 'evidence' | 'observation';
+
 export type SignOffFormVersionStatus = 'published';
 
 export type SignOffAssignmentStatus = 'pending' | 'completed' | 'cancelled';
@@ -107,6 +110,10 @@ export interface SignOffForm {
   creator: SignOffMemberSummary | null;
   latestVersionId: string | null;
   status: SignOffFormStatus;
+  /** How it is completed. Can't change once the sign-off has been assigned. */
+  method?: SignOffMethod;
+  /** Filled in over time: one copy filled in over several sessions, each answer recording who set it and when. */
+  fillOverTime?: boolean;
   createdAt: string;
   updatedAt: string;
   latestVersion: SignOffFormVersion | null;
@@ -189,6 +196,9 @@ export interface SignOffSubmissionsQuery extends PaginationQuery {
 export interface CreateSignOffFormInput {
   name: string;
   description?: string | null;
+  /** Defaults to 'evidence'. */
+  method?: SignOffMethod;
+  fillOverTime?: boolean;
   initialVersion?: {
     inputDefs: SignOffInputDef[];
     schema: SignOffFieldDef[];
@@ -201,6 +211,9 @@ export interface UpdateSignOffFormInput {
   name?: string | null;
   description?: string | null;
   status?: SignOffFormStatus;
+  /** Only until the sign-off has been assigned. */
+  method?: SignOffMethod;
+  fillOverTime?: boolean;
 }
 
 export interface CreateSignOffFormVersionInput {
