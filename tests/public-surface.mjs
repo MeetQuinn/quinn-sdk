@@ -29,3 +29,37 @@ assert.match(rolesService, /list\(/);
 assert.match(rolesService, /create\(/);
 assert.match(rolesService, /update\(/);
 assert.match(rolesService, /delete\(/);
+
+// Client headers and the API contract option.
+import { createRequire } from 'node:module';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+assert.match(index, /QuinnApiContract/);
+assert.match(read('../dist/config.d.ts'), /contract\?: QuinnApiContract/);
+
+const { Quinn } = createRequire(import.meta.url)('../dist/index.js');
+const dir = mkdtempSync(join(tmpdir(), 'quinn-sdk-surface-'));
+const noFile = join(dir, 'missing.json');
+const base = { apiUrl: 'https://api.example.test', token: 't', orgId: 'o', configPath: noFile };
+const headersOf = (config) => new Quinn(config).http.defaults.headers;
+delete process.env.QUINN_API_CONTRACT;
+
+const v1 = headersOf(base);
+assert.equal(v1['x-lp-client'], 'quinn-sdk');
+assert.equal(v1['x-lp-contract'], undefined);
+
+assert.equal(headersOf({ ...base, contract: 2 })['x-lp-contract'], '2');
+assert.equal(headersOf({ ...base, contract: 1 })['x-lp-contract'], undefined);
+
+process.env.QUINN_API_CONTRACT = '2';
+assert.equal(headersOf(base)['x-lp-contract'], '2');
+assert.equal(headersOf({ ...base, contract: 1 })['x-lp-contract'], undefined);
+process.env.QUINN_API_CONTRACT = '3';
+assert.throws(() => headersOf(base), /invalid contract/);
+delete process.env.QUINN_API_CONTRACT;
+
+const file = join(dir, 'config.json');
+writeFileSync(file, JSON.stringify({ contract: 2 }));
+assert.equal(headersOf({ ...base, configPath: file })['x-lp-contract'], '2');
