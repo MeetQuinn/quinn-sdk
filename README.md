@@ -38,6 +38,7 @@ Supported environment variables:
 - `QUINN_API_TOKEN`
 - `QUINN_ORG_ID`
 - `QUINN_ALLOW_QUINN_MUTATION`
+- `QUINN_API_CONTRACT`
 - `QUINN_CONFIG_PATH`
 
 Default config file path:
@@ -45,6 +46,31 @@ Default config file path:
 ```text
 ~/.config/quinn/config.json
 ```
+
+## API Contract
+
+Every request the SDK sends carries `x-lp-client: quinn-sdk`, so the Quinn API
+can tell SDK traffic apart from other callers.
+
+The Quinn API speaks two contracts. They differ only in the names of the Skill
+Rubric fields on the routes that carry them:
+
+| Contract | Example: a sign-off field's Skill Rubrics |
+|---|---|
+| `1` (default) | `eskillIds` |
+| `2` | `skillRubricIds` |
+
+Choose contract 2 with the `contract` option, `QUINN_API_CONTRACT=2`, or
+`"contract": 2` in the config file. The SDK then sends `x-lp-contract: 2`, and
+you must use the contract 2 names in request bodies. The API rejects a request
+that mixes the two with a 400.
+
+```ts
+const quinn = new Quinn({ contract: 2 });
+```
+
+If you pass your own `httpClient`, the SDK adds no headers to it. Set
+`x-lp-client` and, for contract 2, `x-lp-contract: 2` yourself.
 
 ## Mutation Guard
 

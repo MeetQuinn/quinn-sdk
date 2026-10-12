@@ -34,7 +34,7 @@ export {
   resolveApiUrl,
   resolveConfigPath,
 } from './config';
-export type { QuinnClientConfig } from './config';
+export type { QuinnApiContract, QuinnClientConfig } from './config';
 export {
   getGlobalMutationObserver,
   notifyMutationObserver,
@@ -91,6 +91,7 @@ export class Quinn {
         apiUrl: this.config.apiUrl,
         token: this.config.token,
         orgId: this.config.orgId,
+        contract: this.config.contract,
       });
     this.automations = new AutomationsService(
       this.http,

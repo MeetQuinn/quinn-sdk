@@ -10,6 +10,14 @@ import {
 
 export const DEFAULT_QUINN_API_URL = 'https://api.lunapark.com';
 
+/**
+ * The Quinn API contract a client speaks. Contract 1 is the default. Under
+ * contract 2 the Skill Rubric fields use their new names (for example
+ * `skillRubricIds` instead of `eskillIds` on a sign-off field) and an old name
+ * is rejected with a 400.
+ */
+export type QuinnApiContract = 1 | 2;
+
 export interface QuinnClientConfig {
   apiUrl?: string;
   token?: string;
@@ -18,6 +26,7 @@ export interface QuinnClientConfig {
   httpClient?: AxiosInstance;
   allowQuinnMutation?: boolean;
   onMutationCommitted?: QuinnMutationObserver;
+  contract?: QuinnApiContract;
 }
 
 export interface QuinnResolvedConfig {
@@ -27,6 +36,7 @@ export interface QuinnResolvedConfig {
   httpClient?: AxiosInstance;
   allowQuinnMutation: boolean;
   onMutationCommitted?: QuinnMutationObserver;
+  contract: QuinnApiContract;
 }
 
 interface QuinnFileConfig {
@@ -34,6 +44,7 @@ interface QuinnFileConfig {
   token?: string;
   orgId?: string;
   allowQuinnMutation?: boolean;
+  contract?: number | string;
 }
 
 export function resolveQuinnConfig(input: QuinnClientConfig): QuinnResolvedConfig {
@@ -53,6 +64,7 @@ export function resolveQuinnConfig(input: QuinnClientConfig): QuinnResolvedConfi
     process.env.QUINN_ALLOW_QUINN_MUTATION,
     fileConfig.allowQuinnMutation
   );
+  const contract = resolveContract(input.contract, process.env.QUINN_API_CONTRACT, fileConfig.contract);
 
   if (!apiUrl) {
     throw new Error('missing apiUrl');
@@ -72,6 +84,7 @@ export function resolveQuinnConfig(input: QuinnClientConfig): QuinnResolvedConfi
     allowQuinnMutation,
     onMutationCommitted:
       input.onMutationCommitted ?? getGlobalMutationObserver(),
+    contract,
   };
 }
 
@@ -107,6 +120,7 @@ function readConfigFile(configPath: string): QuinnFileConfig {
       token: asNonEmptyString(parsed.token),
       orgId: asNonEmptyString(parsed.orgId),
       allowQuinnMutation: asBoolean(parsed.allowQuinnMutation),
+      contract: parsed.contract,
     };
   } catch {
     return {};
@@ -123,6 +137,23 @@ function resolveAllowQuinnMutation(
     }
   }
   return true;
+}
+
+function resolveContract(...values: Array<number | string | undefined>): QuinnApiContract {
+  for (const value of values) {
+    if (value === undefined || value === null) {
+      continue;
+    }
+    const normalized = String(value).trim();
+    if (normalized === '') {
+      continue;
+    }
+    if (normalized === '1' || normalized === '2') {
+      return Number(normalized) as QuinnApiContract;
+    }
+    throw new Error(`invalid contract ${JSON.stringify(value)}: use 1 or 2`);
+  }
+  return 1;
 }
 
 function firstNonEmpty(...values: Array<string | undefined>): string | undefined {
