@@ -57,6 +57,9 @@ process.env.QUINN_API_CONTRACT = '2';
 assert.equal(headersOf(base)['x-lp-contract'], '2');
 assert.equal(headersOf({ ...base, contract: 1 })['x-lp-contract'], undefined);
 process.env.QUINN_API_CONTRACT = '3';
+assert.equal(headersOf(base)['x-lp-contract'], '3');
+assert.equal(headersOf({ ...base, contract: 2 })['x-lp-contract'], '2');
+process.env.QUINN_API_CONTRACT = '4';
 assert.throws(() => headersOf(base), /invalid contract/);
 delete process.env.QUINN_API_CONTRACT;
 

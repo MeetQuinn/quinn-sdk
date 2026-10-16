@@ -14,9 +14,11 @@ export const DEFAULT_QUINN_API_URL = 'https://api.lunapark.com';
  * The Quinn API contract a client speaks. Contract 1 is the default. Under
  * contract 2 the Skill Rubric fields use their new names (for example
  * `skillRubricIds` instead of `eskillIds` on a sign-off field) and an old name
- * is rejected with a 400.
+ * is rejected with a 400. Contract 3 keeps those names and renames the Skill
+ * fields (`capabilityId` becomes `skillId`); no route the SDK calls carries a
+ * Skill field, so the SDK sends the same bodies under 2 and 3.
  */
-export type QuinnApiContract = 1 | 2;
+export type QuinnApiContract = 1 | 2 | 3;
 
 export interface QuinnClientConfig {
   apiUrl?: string;
@@ -148,10 +150,10 @@ function resolveContract(...values: Array<number | string | undefined>): QuinnAp
     if (normalized === '') {
       continue;
     }
-    if (normalized === '1' || normalized === '2') {
+    if (normalized === '1' || normalized === '2' || normalized === '3') {
       return Number(normalized) as QuinnApiContract;
     }
-    throw new Error(`invalid contract ${JSON.stringify(value)}: use 1 or 2`);
+    throw new Error(`invalid contract ${JSON.stringify(value)}: use 1, 2 or 3`);
   }
   return 1;
 }

@@ -19,7 +19,9 @@ export function createQuinnHttpClient(config: QuinnHttpConfig): AxiosInstance {
       Authorization: `Bearer ${config.token}`,
       'Content-Type': 'application/json',
       'x-lp-client': QUINN_SDK_CLIENT_NAME,
-      ...(config.contract === 2 ? { 'x-lp-contract': '2' } : {}),
+      ...(config.contract === 2 || config.contract === 3
+        ? { 'x-lp-contract': String(config.contract) }
+        : {}),
     },
   });
 }
