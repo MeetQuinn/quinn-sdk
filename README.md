@@ -52,25 +52,29 @@ Default config file path:
 Every request the SDK sends carries `x-lp-client: quinn-sdk`, so the Quinn API
 can tell SDK traffic apart from other callers.
 
-The Quinn API speaks two contracts. They differ only in the names of the Skill
-Rubric fields on the routes that carry them:
+The Quinn API speaks three contracts. They differ only in the names of the
+Skill Rubric and Skill fields on the routes that carry them:
 
-| Contract | Example: a sign-off field's Skill Rubrics |
-|---|---|
-| `1` (default) | `eskillIds` |
-| `2` | `skillRubricIds` |
+| Contract | A sign-off field's Skill Rubrics | A Skill's id |
+|---|---|---|
+| `1` (default) | `eskillIds` | `capabilityId` |
+| `2` | `skillRubricIds` | `capabilityId` |
+| `3` | `skillRubricIds` | `skillId` |
 
-Choose contract 2 with the `contract` option, `QUINN_API_CONTRACT=2`, or
-`"contract": 2` in the config file. The SDK then sends `x-lp-contract: 2`, and
-you must use the contract 2 names in request bodies. The API rejects a request
-that mixes the two with a 400.
+No route the SDK calls carries a Skill field, so contracts 2 and 3 send and
+receive the same names through the SDK. Contract 1 is being retired; use 3.
+
+Choose a contract with the `contract` option, `QUINN_API_CONTRACT`, or
+`"contract"` in the config file. For 2 or 3 the SDK sends `x-lp-contract` with
+that number, and you must use that contract's names in request bodies. The API
+rejects a request that mixes contracts with a 400.
 
 ```ts
-const quinn = new Quinn({ contract: 2 });
+const quinn = new Quinn({ contract: 3 });
 ```
 
 If you pass your own `httpClient`, the SDK adds no headers to it. Set
-`x-lp-client` and, for contract 2, `x-lp-contract: 2` yourself.
+`x-lp-client` and, for contract 2 or 3, `x-lp-contract` yourself.
 
 ## Mutation Guard
 
